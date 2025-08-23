@@ -1,15 +1,13 @@
 // --- INITIALIZATION ---
 window.onload = () => {
-    // Load liked songs from storage first
     loadLikedSongs();
-    // Then render the initial full playlist
     renderPlaylist(songs);
-    // Then update the UI based on liked songs
     updateLikeButtonsUI();
     updateProfileStats();
 };
 
-const music = new Audio('audio/1.mp3');
+// --- THIS IS A KEY FIX: Start with an empty Audio object ---
+const music = new Audio();
 
 // --- DATA & STATE ---
 const songs = [
@@ -38,7 +36,7 @@ let likedSongs = new Set();
 let currentPlaylist = songs;
 let index = 0;
 let isShuffle = false;
-let repeatMode = 0; // 0: no-repeat, 1: repeat-playlist, 2: repeat-one-song
+let repeatMode = 0;
 
 // --- DOM ELEMENTS ---
 const masterPlay = document.getElementById('masterPlay');
@@ -61,18 +59,17 @@ function renderPlaylist(playlist) {
     const popSongContainer = document.querySelector('.pop_song');
     
     songListContainer.innerHTML = '';
-    popSongContainer.innerHTML = ''; // Clear both lists
-    currentPlaylist = playlist; // Update current playlist
+    popSongContainer.innerHTML = '';
+    currentPlaylist = playlist;
 
     if (playlist.length === 0) {
-        songListContainer.innerHTML = '<li class="no-songs">You have no liked songs yet.</li>';
+        songListContainer.innerHTML = '<li class="no-songs" style="padding: 20px;">You have no liked songs yet.</li>';
         return;
     }
 
     playlist.forEach((song, idx) => {
         const cleanSongName = song.songName.replace(/<[^>]*>?/gm, ' ');
 
-        // Main Playlist Item
         const mainLi = document.createElement('li');
         mainLi.className = 'songitem';
         mainLi.innerHTML = `
@@ -84,7 +81,6 @@ function renderPlaylist(playlist) {
         `;
         songListContainer.appendChild(mainLi);
 
-        // Popular Song Item (only if rendering all songs)
         if (playlist === songs) {
             const popLi = document.createElement('li');
             popLi.className = 'songitem';
@@ -99,7 +95,6 @@ function renderPlaylist(playlist) {
         }
     });
 
-    // Re-attach all event listeners for the new elements
     attachAllEventListeners();
     updateLikeButtonsUI();
 }
@@ -122,7 +117,6 @@ function toggleLike(songId) {
     updateLikeButtonsUI();
     updateProfileStats();
 
-    // If viewing liked songs and un-like a song, re-render the list
     if (document.querySelector('[data-playlist="liked"].active')) {
         const likedSongsArray = songs.filter(song => likedSongs.has(song.id));
         renderPlaylist(likedSongsArray);
@@ -131,18 +125,15 @@ function toggleLike(songId) {
 function updateLikeButtonsUI() {
     document.querySelectorAll('.like_icon').forEach(icon => {
         if (likedSongs.has(icon.dataset.id)) {
-            icon.classList.add('liked');
+            icon.classList.add('liked', 'bi-heart-fill');
             icon.classList.remove('bi-heart');
-            icon.classList.add('bi-heart-fill');
         } else {
-            icon.classList.remove('liked');
-            icon.classList.remove('bi-heart-fill');
+            icon.classList.remove('liked', 'bi-heart-fill');
             icon.classList.add('bi-heart');
         }
     });
-    // Sync master player like button
     const likeMaster = document.getElementById('like_master');
-    if (likedSongs.has(String(index))) {
+    if (index > 0 && likedSongs.has(String(index))) {
         likeMaster.classList.add('liked', 'bi-heart-fill');
         likeMaster.classList.remove('bi-heart');
     } else {
@@ -163,13 +154,6 @@ function playSong(songId) {
     title.innerHTML = songData.songName;
     music.play();
     
-    wave.classList.add('active1');
-    masterPlay.classList.remove('bi-play-fill');
-    masterPlay.classList.add('bi-pause-fill');
-    
-    document.getElementById(index)?.classList.remove('bi-play-circle-fill');
-    document.getElementById(index)?.classList.add('bi-pause-circle-fill');
-    
     updateLikeButtonsUI();
     makeAllBackgrounds();
     Array.from(document.getElementsByClassName('songitem')).forEach(item => {
@@ -179,27 +163,32 @@ function playSong(songId) {
         }
     });
 }
+
+// --- THIS IS THE KEY FIX: The smarter play/pause function ---
 function togglePlayPause() {
-    if (!music.src || music.src.endsWith('/')) return; // Don't play if no song is loaded
-    if (music.paused || music.currentTime <= 0) {
-        music.play();
+    // If no song has been selected yet (index is 0)
+    if (index === 0) {
+        // Play the first song in the current playlist
+        playSong(currentPlaylist[0].id);
     } else {
-        music.pause();
+        // Otherwise, just toggle play/pause for the current song
+        if (music.paused || music.currentTime <= 0) {
+            music.play();
+        } else {
+            music.pause();
+        }
     }
 }
+
 music.onplay = () => {
     wave.classList.add('active1');
-    masterPlay.classList.remove('bi-play-fill');
-    masterPlay.classList.add('bi-pause-fill');
-    document.getElementById(index)?.classList.remove('bi-play-circle-fill');
-    document.getElementById(index)?.classList.add('bi-pause-circle-fill');
+    masterPlay.classList.replace('bi-play-fill', 'bi-pause-fill');
+    document.getElementById(index)?.classList.replace('bi-play-circle-fill', 'bi-pause-circle-fill');
 };
 music.onpause = () => {
     wave.classList.remove('active1');
-    masterPlay.classList.add('bi-play-fill');
-    masterPlay.classList.remove('bi-pause-fill');
-    document.getElementById(index)?.classList.add('bi-play-circle-fill');
-    document.getElementById(index)?.classList.remove('bi-pause-circle-fill');
+    masterPlay.classList.replace('bi-pause-fill', 'bi-play-fill');
+    document.getElementById(index)?.classList.replace('bi-pause-circle-fill', 'bi-play-circle-fill');
 };
 
 const makeAllplays = () => Array.from(document.getElementsByClassName('playlistplay')).forEach(el => el.classList.replace('bi-pause-circle-fill', 'bi-play-circle-fill'));
@@ -216,78 +205,53 @@ music.addEventListener('timeupdate', () => {
     let min_curr = Math.floor(currentTime / 60);
     let sec_curr = Math.floor(currentTime % 60);
     currentStart.innerText = `${min_curr}:${String(sec_curr).padStart(2, '0')}`;
-
     const progressBar = (currentTime / duration) * 100;
     seek.value = isNaN(progressBar) ? 0 : progressBar;
     bar2.style.width = `${seek.value}%`;
     dot.style.left = `${seek.value}%`;
 });
-
-seek.addEventListener('change', () => {
-    if (music.duration) music.currentTime = (seek.value * music.duration) / 100;
-});
-
+seek.addEventListener('change', () => { if (music.duration) music.currentTime = (seek.value * music.duration) / 100; });
 music.addEventListener('ended', () => {
-    if (repeatMode === 2) { // Repeat one
-        playSong(index);
-    } else {
-        next.click();
-    }
+    if (repeatMode === 2) playSong(index);
+    else next.click();
 });
-
 next.addEventListener('click', () => {
+    if (currentPlaylist.length === 0) return;
     if (isShuffle) {
         let nextIndex;
-        do {
-            nextIndex = Math.floor(Math.random() * currentPlaylist.length);
-        } while (currentPlaylist[nextIndex].id == index && currentPlaylist.length > 1);
+        do { nextIndex = Math.floor(Math.random() * currentPlaylist.length); } while (currentPlaylist[nextIndex].id == index && currentPlaylist.length > 1);
         playSong(currentPlaylist[nextIndex].id);
         return;
     }
-
     const currentIndexInPlaylist = currentPlaylist.findIndex(song => song.id == index);
     if (currentIndexInPlaylist === currentPlaylist.length - 1) {
-        if (repeatMode === 1) { // Repeat playlist
-            playSong(currentPlaylist[0].id);
-        }
+        if (repeatMode === 1) playSong(currentPlaylist[0].id);
     } else {
         playSong(currentPlaylist[currentIndexInPlaylist + 1].id);
     }
 });
-
 back.addEventListener('click', () => {
+    if (currentPlaylist.length === 0) return;
     const currentIndexInPlaylist = currentPlaylist.findIndex(song => song.id == index);
-    if (currentIndexInPlaylist === 0) {
-        playSong(currentPlaylist[currentPlaylist.length - 1].id);
-    } else {
-        playSong(currentPlaylist[currentIndexInPlaylist - 1].id);
-    }
+    if (currentIndexInPlaylist <= 0) playSong(currentPlaylist[currentPlaylist.length - 1].id);
+    else playSong(currentPlaylist[currentIndexInPlaylist - 1].id);
 });
-
 shuffleBtn.addEventListener('click', () => {
     isShuffle = !isShuffle;
     shuffleBtn.classList.toggle('active', isShuffle);
 });
-
 repeatBtn.addEventListener('click', () => {
     repeatMode = (repeatMode + 1) % 3;
     repeatBtn.classList.toggle('active', repeatMode !== 0);
     repeatBtn.classList.toggle('repeat-one', repeatMode === 2);
-    if (repeatMode === 0) repeatBtn.classList.replace('bi-repeat-1', 'bi-repeat');
-    if (repeatMode === 1) repeatBtn.classList.replace('bi-repeat', 'bi-repeat');
     if (repeatMode === 2) repeatBtn.classList.replace('bi-repeat', 'bi-repeat-1');
+    else repeatBtn.classList.replace('bi-repeat-1', 'bi-repeat');
 });
-
-// --- VOLUME ---
 const vol = document.getElementById('vol');
 vol.addEventListener('change', () => { music.volume = vol.value / 100; });
-
-// --- SEARCH ---
 const searchInput = document.querySelector('.search input');
 const searchResults = document.querySelector('.search .search_results');
 // ... (search functionality remains the same)
-
-// --- PROFILE MODAL ---
 const userProfileButton = document.getElementById('user_profile_button');
 const profileModal = document.getElementById('profile_modal');
 const closeModal = document.getElementById('close_modal');
@@ -296,13 +260,10 @@ function updateProfileStats() {
 }
 userProfileButton.addEventListener('click', () => profileModal.classList.add('active'));
 closeModal.addEventListener('click', () => profileModal.classList.remove('active'));
-
-// --- MENU & PLAYLIST SWITCHING ---
 document.querySelectorAll('.playlist h4').forEach(menuItem => {
     menuItem.addEventListener('click', (e) => {
         document.querySelector('.playlist h4.active').classList.remove('active');
         e.currentTarget.classList.add('active');
-        
         const playlistType = e.currentTarget.dataset.playlist;
         if (playlistType === 'liked') {
             const likedSongsArray = songs.filter(song => likedSongs.has(song.id));
@@ -312,10 +273,8 @@ document.querySelectorAll('.playlist h4').forEach(menuItem => {
         }
     });
 });
-
-// --- ATTACH ALL DYNAMIC LISTENERS ---
 function attachAllEventListeners() {
-    // Playlist play/pause
+    masterPlay.addEventListener('click', togglePlayPause);
     Array.from(document.getElementsByClassName('playlistplay')).forEach((e) => {
         e.addEventListener('click', (el) => {
             const clickedIndex = el.target.id;
@@ -323,23 +282,18 @@ function attachAllEventListeners() {
             else togglePlayPause();
         });
     });
-    // Like icons
     Array.from(document.getElementsByClassName('like_icon')).forEach((e) => {
         e.addEventListener('click', (el) => {
             toggleLike(el.target.dataset.id);
         });
     });
-    // Master Like button
     document.getElementById('like_master').addEventListener('click', () => {
         if (index > 0) toggleLike(String(index));
     });
-    // Mobile menu close
     Array.from(document.getElementsByClassName('songitem')).forEach(item => {
         item.addEventListener('click', closeMenu);
     });
 }
-
-// --- MOBILE MENU ---
 const menu_list_icon = document.getElementById('menu_list');
 const menu_side = document.querySelector('.menu_side');
 const menu_overlay = document.getElementById('menu_overlay');

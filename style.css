@@ -141,59 +141,27 @@ header .master_play{
     display: flex;
     align-items: center;
     padding: 0 20px;
+    gap: 15px;
 }
 header .master_play .wave {
-    width: 30px;
-    height:30px;
-    display: flex;
-    align-items:flex-end;
-    margin-right: 10px;
+    width: 30px; height:30px; display: flex; align-items:flex-end;
 }
 header .master_play .wave .wave1 {
-  width:3px;
-  height: 10px;
-  background: #36e2ec;
-  margin-right: 3px;
-  border-radius: 10px 10px 0px 0px;
-  animation: unset;
+  width:3px; height: 10px; background: #36e2ec; margin-right: 3px; border-radius: 10px 10px 0px 0px; animation: unset;
 }
 header .master_play .wave .wave1:nth-child(2) { height:13px; animation-delay: .4s; }
 header .master_play .wave .wave1:nth-child(3) { height: 8px; animation-delay: .8s; }
 header .master_play .active1 .wave1 { animation: wave .5s linear infinite; }
 @keyframes wave { 0% { height:10px; } 50% { height:15px; } 100% { height:10px; } }
-.player-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
+.player-info { display: flex; align-items: center; gap: 15px; }
 .player-info img { width:35px; height:35px; }
-.player-info h5{
-    width: 130px;
-    color:#fff;
-    line-height:17px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size:13px;
-}
+.player-info h5{ width: 130px; color:#fff; line-height:17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size:13px; }
 .player-info h5 .subtitle{ font-size: 11px; color: #4c5262; }
 #like_master { font-size: 18px; color: #fff; cursor: pointer; }
 #like_master.liked { color: #36e2ec; }
 
-/* --- DESKTOP PLAYER FIX --- */
-.player-controls {
-    display: flex;
-    align-items: center;
-    flex-grow: 1; /* Allows this container to fill the middle space */
-}
 .buttons-container {
-    font-size: 20px;
-    color: #fff;
-    display: flex;
-    align-items:center;
-    gap: 15px;
-    order: 1; /* This makes buttons appear first */
-    margin: 0 20px 0 40px;
+    font-size: 20px; color: #fff; display: flex; align-items:center; gap: 15px;
 }
 .buttons-container .bi { cursor: pointer; outline:none; }
 #shuffle, #repeat { font-size: 17px; }
@@ -203,16 +171,12 @@ header .master_play .active1 .wave1 { animation: wave .5s linear infinite; }
     border-radius: 50%; width: 12px; height: 12px; text-align: center; line-height: 12px; transform: translate(-5px, 5px);
 }
 #masterPlay {
-    border:1px solid rgb(105,105,105,.1);
-    border-radius: 50%;
-    padding: 1px 5px 0px 7px;
+    border:1px solid rgb(105,105,105,.1); border-radius: 50%; padding: 1px 5px 0px 7px;
 }
 .seek-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    order: 2; /* This makes seek bar appear after buttons */
+    display: flex; align-items: center; gap: 10px;
+    width: 35%; /* THIS IS THE FIX: Constrains the seek bar width */
+    margin: 0 20px;
 }
 .seek-container span{ color: #FFF; width: 32px; font-size: 11px; flex-shrink: 0; }
 .bar { position:relative; width:100%; height: 2px; background: rgb(105,105,170,.1); }
@@ -225,6 +189,7 @@ header .master_play .active1 .wave1 { animation: wave .5s linear infinite; }
 .vol input{ position:absolute; width: 100%; top:-6px; left: 0; cursor: pointer; z-index:99; opacity: 0; }
 .vol .vol_bar{ position:absolute; background: #36e2ec; width: 100%; height: 100%; top:0; transition: width 0.1s linear; }
 .vol .dot { position: absolute; width: 5px; height: 5px; background: #36e2ec; border-radius:50%; left: 100%; top:-1.5px; transition: left 0.1s linear; }
+
 /* 
 ==============================================
     MAIN CONTENT STYLES
@@ -294,7 +259,7 @@ header .song_side nav .search .card .content .subtitle { font-size: 11px; color:
 
 @media screen and (max-width: 930px) {
     header { width: 100%; height: 100%; }
-    header .song_side { width: 100%; height: 100%; overflow-y: auto; padding: 0 0 120px 0; }
+    header .song_side { width: 100%; height: 100%; overflow-y: auto; padding-bottom: 110px; }
     header .song_side::before { display: none; }
     header .song_side .content { background: url('bg.png') no-repeat center center; background-size: cover; min-height: 220px; width: 100%; padding: 30px; border-radius: 0 0 20px 20px; }
     header .song_side .popular_song, header .song_side .popular_artists { width: 90%; margin: 25px auto; }
@@ -311,31 +276,28 @@ header .song_side nav .search .card .content .subtitle { font-size: 11px; color:
         flex-direction: column;
         gap: 5px;
     }
-    .player-info { width: 100%; }
+    .player-info { width: 100%; gap: 10px; }
     .player-info img { width: 40px; height: 40px; }
-    .player-info h5 { flex-grow: 1; font-size: 14px; }
+    .player-info h5 { flex-grow: 1; font-size: 13px; line-height: 1.3; }
     #like_master { font-size: 20px; }
 
-    .player-controls {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
+    .player-controls { display: none; } /* Hide the desktop controls wrapper */
+
     .seek-container {
         width: 100%;
         margin: 0;
-        gap: 5px;
-        order: 1; /* Make seek bar appear first */
+        gap: 10px;
+        order: 1;
     }
     .buttons-container {
         width: 100%;
         justify-content: center;
         gap: 20px;
-        order: 2; /* Make buttons appear second */
+        padding: 5px 0;
+        order: 2;
     }
     #masterPlay {
-        font-size: 36px;
+        font-size: 38px;
         border: none;
         margin: 0;
     }
