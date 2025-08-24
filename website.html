@@ -5,13 +5,14 @@
     <meta http-equiv="x-UA-compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="style.css">
-    <title>Music website</title>
+    <!-- Make sure this points to the CSS file below -->
+    <link rel="stylesheet" href="style.css"> 
+    <title>Feel_the_music</title>
 </head>
 <body>
     <header>
         <div class="menu_side">
-            <h1>NAPSTER</h1>
+            <h1>Feel_the_music</h1>
             <div class="playlist">
                 <h4 class="active" data-playlist="all"><span></span><i class="bi bi-music-note-beamed"></i> Playlist</h4>
                 <h4 data-playlist="liked"><span></span><i class="bi bi-heart-fill"></i> Liked Songs</h4>
@@ -55,34 +56,57 @@
                         <i class="bi bi-arrow-right-short" id="pop_song_right"></i>
                     </div>
                 </div>
-                <div class="pop_song"></div>
+                <!-- Added ID here for easier JS access -->
+                <div class="pop_song" id="pop_song_container"></div>
             </div>
 
-            <div class="popular_artists">
+            <!-- ============================================= -->
+            <!--   NEW LANGUAGE-BASED SONG SECTIONS START HERE   -->
+            <!-- ============================================= -->
+
+            <!-- Telugu Songs Section -->
+            <div class="language_songs">
                 <div class="h4">
-                    <h4>Popular Artists</h4>
+                    <h4>Telugu Songs</h4>
                     <div class="btn_s">
-                        <i class="bi bi-arrow-left-short" id="pop_art_left"></i>
-                        <i class="bi bi-arrow-right-short" id="pop_art_right"></i>
+                        <i class="bi bi-arrow-left-short" id="telugu_song_left"></i>
+                        <i class="bi bi-arrow-right-short" id="telugu_song_right"></i>
                     </div>
                 </div>
-                <ul class="item Artists_bx">
-                    <li><img src="img/akhil.jpg" alt="Akhil"></li>
-                    <li><img src="img/alan.jpg" alt="Alan Walker"></li>
-                    <li><img src="img/arjit.jpg" alt="Arijit Singh"></li>
-                    <li><img src="img/atif.jpg" alt="Atif Aslam"></li>
-                    <li><img src="img/dhvani.jpg" alt="Dhvani Bhanushali"></li>
-                    <li><img src="img/Diljit_Dosanjh.jpg" alt="Diljit Dosanjh"></li>
-                    <li><img src="img/guru.jpg" alt="Guru Randhawa"></li>
-                    <li><img src="img/honey.jpg" alt="Honey Singh"></li>
-                    <li><img src="img/jubin Nautiyal.jpg" alt="Jubin Nautiyal"></li>
-                    <li><img src="img/justin-bieber-lede.jpg" alt="Justin Bieber"></li>
-                    <li><img src="img/neha.jpg" alt="Neha Kakkar"></li>
-                </ul>
+                <div class="pop_song" id="telugu_songs_container"></div>
             </div>
+
+            <!-- Hindi Songs Section -->
+            <div class="language_songs">
+                <div class="h4">
+                    <h4>Hindi Songs</h4>
+                    <div class="btn_s">
+                        <i class="bi bi-arrow-left-short" id="hindi_song_left"></i>
+                        <i class="bi bi-arrow-right-short" id="hindi_song_right"></i>
+                    </div>
+                </div>
+                <div class="pop_song" id="hindi_songs_container"></div>
+            </div>
+
+            <!-- English Songs Section -->
+            <div class="language_songs">
+                <div class="h4">
+                    <h4>English Songs</h4>
+                    <div class="btn_s">
+                        <i class="bi bi-arrow-left-short" id="english_song_left"></i>
+                        <i class="bi bi-arrow-right-short" id="english_song_right"></i>
+                    </div>
+                </div>
+                <div class="pop_song" id="english_songs_container"></div>
+            </div>
+            
+            <!-- ============================================= -->
+            <!--       NEW LANGUAGE-BASED SECTIONS END HERE      -->
+            <!-- ============================================= -->
+
         </div>
 
-        <!-- THIS IS THE NEW, SIMPLIFIED PLAYER STRUCTURE -->
+        <!-- Player Structure (Unchanged) -->
         <div class="master_play">
             <div class="wave" id="wave">
                 <div class="wave1"></div>
@@ -99,30 +123,34 @@
                 <i class="bi bi-heart" id="like_master"></i>
             </div>
 
-            <div class="buttons-container">
-                <i class="bi bi-shuffle" id="shuffle"></i>
-                <i class="bi bi-repeat" id="repeat"></i>
-                <i class="bi bi-skip-start-fill" id="back"></i>
-                <i class="bi bi-play-fill" id="masterPlay"></i>
-                <i class="bi bi-skip-end-fill" id="next"></i>
-                <a href="" download id="download_music"><i class="bi bi-cloud-arrow-down-fill"></i></a>
-            </div>
-
-            <div class="seek-container">
-                <span id="currentStart">0:00</span>
-                <div class="bar">
-                    <input type="range" id="seek" min="0" max="100" value="0">
-                    <div class="bar2" id="bar2"></div>
-                    <div class="dot"></div>
+            <div class="player-controls">
+                <div class="buttons-container">
+                    <i class="bi bi-shuffle" id="shuffle"></i>
+                    <i class="bi bi-skip-start-fill" id="back"></i>
+                    <i class="bi bi-play-fill" id="masterPlay"></i>
+                    <i class="bi bi-skip-end-fill" id="next"></i>
+                    <i class="bi bi-repeat" id="repeat"></i>
                 </div>
-                <span id="currentEnd">0:00</span>
+    
+                <div class="seek-container">
+                    <span id="currentStart">0:00</span>
+                    <div class="bar">
+                        <input type="range" id="seek" min="0" max="100" value="0">
+                        <div class="bar2" id="bar2"></div>
+                        <div class="dot"></div>
+                    </div>
+                    <span id="currentEnd">0:00</span>
+                </div>
             </div>
 
-            <div class="vol">
-                <i class="bi bi-volume-up-fill" id="vol_icon"></i>
-                <input type="range" min="0" max="100" id="vol" value="100">
-                <div class="vol_bar"></div>
-                <div class="dot" id="vol_dot"></div>
+            <div class="player-side-controls">
+                <a href="" download id="download_music"><i class="bi bi-cloud-arrow-down-fill"></i></a>
+                <div class="vol">
+                    <i class="bi bi-volume-up-fill" id="vol_icon"></i>
+                    <input type="range" min="0" max="100" id="vol" value="100">
+                    <div class="vol_bar"></div>
+                    <div class="dot" id="vol_dot"></div>
+                </div>
             </div>
         </div>
     </header>
@@ -146,6 +174,7 @@
         </div>
     </div>
 
+    <!-- Make sure you have this JavaScript file -->
     <script src="app.js"></script>
 </body>
 </html>
