@@ -1,57 +1,4 @@
-// --- INITIALIZATION ---
-window.onload = () => {
-    loadState();
-    renderPlaylist(currentPlaylist); // Renders sidebar playlist
-    populateAllContentSections();    // Renders all main content song carousels
-    setupScrollers();                // Activates all arrow buttons
-    setupSearch();                   // ** NEW: Activates the search bar **
-    updateLikeButtonsUI();
-    updateProfileStats();
-    restoreLastSong();
-};
-
-// --- AUDIO ---
-const music = new Audio();
-
-// --- DATA & STATE ---
-const songs = [
-    // English Songs
-    { id: '1', songName: `On My Way<br><div class="subtitle">Alan Walker</div>`, poster: "img/1.jpg", language: "english" },
-    { id: '2', songName: `Alan Walker-Fade<br><div class="subtitle">Alan Walker</div>`, poster: "img/2.jpg", language: "english" },
-    { id: '3', songName: `Cartoon - On & On<br><div class="subtitle">Daniel Levi</div>`, poster: "img/3.jpg", language: "english" },
-    { id: '4', songName: `Warriyo - Mortals<br><div class="subtitle">Mortals</div>`, poster: "img/4.jpg", language: "english" },
-    { id: '5', songName: `Ertugrul Gazi<br><div class="subtitle">Ertugrul</div>`, poster: "img/5.jpg", language: "english" },
-    { id: '6', songName: `Electronic Music<br><div class="subtitle">Electro</div>`, poster: "img/6.jpg", language: "english" },
-    // Hindi Songs
-    { id: '7', songName: `Agar Tum Sath Ho<br><div class="subtitle">Tamashaa</div>`, poster: "img/7.jpg", language: "hindi" },
-    { id: '8', songName: `Suna Hai<br><div class="subtitle">Neha Kakker</div>`, poster: "img/8.jpg", language: "hindi" },
-    { id: '9', songName: `Dilber<br><div class="subtitle">Satyameva Jayate</div>`, poster: "img/9.jpg", language: "hindi" },
-    { id: '10', songName: `Duniya<br><div class="subtitle">Luka Chuppi</div>`, poster: "img/10.jpg", language: "hindi" },
-    { id: '11', songName: `Lagdi Lahore Di<br><div class="subtitle">Street Dancer</div>`, poster: "img/11.jpg", language: "hindi" },
-    { id: '12', songName: `Putt Jatt Da<br><div class="subtitle">Putt Jatt Da</div>`, poster: "img/12.jpg", language: "hindi" },
-    { id: '13', songName: `Baarishein<br><div class="subtitle">Atif Aslam</div>`, poster: "img/13.jpg", language: "hindi" },
-    { id: '14', songName: `Vaaste<br><div class="subtitle">Dhvani Bhanushali</div>`, poster: "img/14.jpg", language: "hindi" },
-    { id: '15', songName: `Lut Gaye<br><div class="subtitle">Jubin Nautiyal</div>`, poster: "img/15.jpg", language: "hindi" },
-    { id: '16', songName: `Tu Meri Zindagi Hai<br><div class="subtitle">Jubin Nautiyal</div>`, poster: "img/16.jpg", language: "hindi" },
-    { id: '17', songName: `Batao Yaad Hai Tumko<br><div class="subtitle">Rahat Fateh Ali Khan</div>`, poster: "img/17.jpg", language: "hindi" },
-    { id: '18', songName: `Mere Dhol Judaiyan<br><div class="subtitle">Ali Sethi Seha Gill</div>`, poster: "img/18.jpg", language: "hindi" },
-    { id: '19', songName: `Eh Munde Pagal Ne Saare<br><div class="subtitle">AP Dhillon</div>`, poster: "img/19.jpg", language: "hindi" },
-    { id: '20', songName: `Dunny 82k<br><div class="subtitle">AP Dhillon</div>`, poster: "img/20.jpg", language: "hindi" },
-    // Telugu Songs (New)
-    { id: '21', songName: `Butta Bomma<br><div class="subtitle">Ala Vaikunthapurramuloo</div>`, poster: "img/1.jpg", language: "telugu" },
-    { id: '22', songName: `Ramuloo Ramulaa<br><div class="subtitle">Ala Vaikunthapurramuloo</div>`, poster: "img/2.jpg", language: "telugu" },
-    { id: '23', songName: `Samajavaragamana<br><div class="subtitle">Ala Vaikunthapurramuloo</div>`, poster: "img/3.jpg", language: "telugu" },
-    { id: '24', songName: `Oo Antava<br><div class="subtitle">Pushpa</div>`, poster: "img/4.jpg", language: "telugu" },
-    { id: '25', songName: `Naatu Naatu<br><div class="subtitle">RRR</div>`, poster: "img/5.jpg", language: "telugu" }
-];
-
-let likedSongs = new Set();
-let currentPlaylist = songs;
-let index = null; // will always hold a STRING (song.id)
-let isShuffle = false;
-let repeatMode = 0; // 0=none,1=all,2=one
-
-// --- DOM ELEMENTS ---
+// --- DOM ELEMENTS (No changes needed) ---
 const masterPlay = document.getElementById('masterPlay');
 const wave = document.getElementById('wave');
 const poster_master_play = document.getElementById('poster_master_play');
@@ -66,61 +13,154 @@ const next = document.getElementById("next");
 const shuffleBtn = document.getElementById('shuffle');
 const repeatBtn = document.getElementById('repeat');
 const vol = document.getElementById('vol');
+const songSide = document.querySelector('.song_side');
+
+// --- AUDIO ---
+const music = new Audio();
+
+// --- DATA & STATE ---
+let allSongs = new Map();
+let currentPlaylist = [];
+let index = null;
+let isShuffle = false;
+let repeatMode = 0;
+let likedSongs = new Set();
 
 // ================================
-// LOCAL STORAGE STATE
+// INITIALIZATION
 // ================================
-function saveState() {
-    localStorage.setItem("playerState", JSON.stringify({
-        index,
-        likedSongs: [...likedSongs],
-        isShuffle,
-        repeatMode,
-        volume: music.volume
-    }));
-}
-function loadState() {
+window.onload = () => {
+    loadState();
+    initializeApp();
+};
+
+async function initializeApp() {
+    showLoadingState();
+
     try {
-        const state = JSON.parse(localStorage.getItem("playerState"));
-        if (!state) return;
-        index = state.index ?? null;
-        likedSongs = new Set(state.likedSongs || []);
-        isShuffle = !!state.isShuffle;
-        repeatMode = state.repeatMode || 0;
-        music.volume = state.volume ?? 1;
-        vol.value = music.volume * 100;
-    } catch (e) {
-        console.warn("Failed to load state", e);
+        const [telugu, hindi, english, tamil, kannada, artists] = await Promise.all([
+            fetchSongsByQuery('latest telugu'),
+            fetchSongsByQuery('latest hindi'),
+            fetchSongsByQuery('top english billboard'),
+            fetchSongsByQuery('latest tamil'),
+            fetchSongsByQuery('latest kannada'),
+            fetchPopularArtists() // New function call
+        ]);
+
+        [...telugu, ...hindi, ...english, ...tamil, ...kannada].forEach(song => {
+            if (!allSongs.has(song.id)) {
+                allSongs.set(song.id, song);
+            }
+        });
+
+        populateAllContentSections({ telugu, hindi, english, tamil, kannada, artists });
+
+        currentPlaylist = [...allSongs.values()];
+        renderPlaylist(currentPlaylist);
+
+        setupScrollers();
+        setupSearch();
+        updateLikeButtonsUI();
+        updateProfileStats();
+        restoreLastSong();
+
+    } catch (error) {
+        console.error("Initialization failed:", error);
+        showErrorState();
     }
 }
-function restoreLastSong() {
-    if (index) {
-        playSong(index, false); // load last song but don’t auto play
+
+// --- API FETCHING ---
+async function fetchSongsByQuery(query, limit = 20) {
+    const apiUrl = `https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}&limit=${limit}`;
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+        const data = await response.json();
+        if (!data.success || !data.data.results) return [];
+        return data.data.results.map(song => ({
+            id: song.id,
+            songName: `${song.name}<br><div class="subtitle">${song.artists.primary.map(a => a.name).join(', ')}</div>`,
+            poster: song.image.find(img => img.quality === '500x500')?.url || song.image[0].url,
+            language: song.language.toLowerCase(),
+            audioUrl: song.downloadUrl.find(aud => aud.quality === '320kbps')?.url || song.downloadUrl[0].url
+        }));
+    } catch (error) {
+        console.error(`Failed to fetch songs for query "${query}":`, error);
+        return [];
+    }
+}
+
+// --- NEW: Function to fetch popular artists ---
+async function fetchPopularArtists() {
+    // We search for a few popular artists since there's no "top artists" endpoint
+    const artistNames = ["Arijit Singh", "Shreya Ghoshal", "Anirudh Ravichander", "Sid Sriram", "Badshah", "AP Dhillon"];
+    const artistPromises = artistNames.map(name =>
+        fetch(`https://saavn.dev/api/search/artists?query=${encodeURIComponent(name)}&limit=1`)
+            .then(res => res.json())
+    );
+
+    try {
+        const results = await Promise.all(artistPromises);
+        const artists = results
+            .filter(res => res.success && res.data.results.length > 0)
+            .map(res => {
+                const artist = res.data.results[0];
+                return {
+                    id: artist.id,
+                    name: artist.name,
+                    image: artist.image.find(img => img.quality === '500x500')?.url || artist.image[0].url
+                };
+            });
+        return artists;
+    } catch (error) {
+        console.error("Failed to fetch artists:", error);
+        return [];
     }
 }
 
 // ================================
-// DYNAMIC CONTENT RENDERING
+// DYNAMIC CONTENT & UI RENDERING
 // ================================
+function showLoadingState() {
+    const loadingHTML = '<p style="padding: 10px; color: #a4a8b4;">Loading...</p>';
+    document.querySelector('.menu_song .song-list-container').innerHTML = `<li style="padding:20px;">Loading...</li>`;
+    ['telugu', 'hindi', 'english', 'tamil', 'kannada'].forEach(lang => {
+        const container = document.getElementById(`${lang}_songs_container`);
+        if (container) container.innerHTML = loadingHTML;
+    });
+    const artistsContainer = document.getElementById('artists_container');
+    if (artistsContainer) artistsContainer.innerHTML = loadingHTML;
+}
 
-// Renders the LEFT SIDEBAR playlist
-function renderPlaylist(playlist) {
+function showErrorState() {
+    document.querySelector('.menu_song .song-list-container').innerHTML = '<li style="padding:20px; color: #ff6b6b;">Failed to load. Please refresh.</li>';
+}
+
+function renderPlaylist(playlist, title = null) {
     const songListContainer = document.querySelector('.menu_song .song-list-container');
+    // If a title is passed (like an artist name), display it
+    if (title) {
+        document.querySelector('.menu_side h1').innerText = title;
+    } else {
+        document.querySelector('.menu_side h1').innerText = "Feel_the_music";
+    }
+
     songListContainer.innerHTML = '';
     currentPlaylist = playlist;
 
     if (playlist.length === 0) {
-        songListContainer.innerHTML = '<li class="no-songs" style="padding: 20px;">You have no liked songs yet.</li>';
+        songListContainer.innerHTML = '<li class="no-songs" style="padding: 20px;">No songs found.</li>';
         return;
     }
 
     playlist.forEach((song, idx) => {
-        const cleanSongName = song.songName.replace(/<[^>]*>?/gm, ' ');
         const mainLi = document.createElement('li');
         mainLi.className = 'songitem';
+        mainLi.dataset.id = song.id;
         mainLi.innerHTML = `
             <span>${String(idx + 1).padStart(2, '0')}</span>
-            <img src="${song.poster}" alt="${cleanSongName}">
+            <img src="${song.poster}" alt="">
             <h5>${song.songName}</h5>
             <i class="bi bi-heart like_icon" data-id="${song.id}"></i>
             <i class="bi playlistplay bi-play-circle-fill" id="${song.id}"></i>
@@ -130,19 +170,22 @@ function renderPlaylist(playlist) {
 
     attachAllEventListeners();
     updateLikeButtonsUI();
+    updateNowPlayingIndicator();
 }
 
-// Populates a single song section (e.g., Telugu, Hindi) in the MAIN CONTENT area
 function populateSongSection(container, songList) {
-    if (!container) return;
-    container.innerHTML = ''; 
+    if (!container || !songList || songList.length === 0) {
+        if (container) container.innerHTML = `<p style="padding: 10px; color: #a4a8b4;">No songs found.</p>`;
+        return;
+    }
+    container.innerHTML = '';
     songList.forEach(song => {
-        const cleanSongName = song.songName.replace(/<[^>]*>?/gm, ' ');
         const li = document.createElement('li');
         li.className = 'songitem';
+        li.dataset.id = song.id;
         li.innerHTML = `
             <div class="img_play">
-                <img src="${song.poster}" alt="${cleanSongName}">
+                <img src="${song.poster}" alt="">
                 <i class="bi playlistplay bi-play-circle-fill" id="${song.id}"></i>
             </div>
             <h5>${song.songName}</h5>
@@ -151,179 +194,214 @@ function populateSongSection(container, songList) {
     });
 }
 
-// Populates all song carousels in the MAIN CONTENT area
-function populateAllContentSections() {
-    // 1. Popular Songs (all songs)
-    populateSongSection(document.getElementById('pop_song_container'), songs);
+// --- NEW: Function to render artist cards ---
+function populateArtistsSection(container, artists) {
+    if (!container || !artists || artists.length === 0) {
+        if(container) container.innerHTML = `<p style="padding: 10px; color: #a4a8b4;">No artists found.</p>`;
+        return;
+    }
+    container.innerHTML = '';
+    artists.forEach(artist => {
+        const li = document.createElement('li');
+        // Add a specific class for event handling
+        li.className = 'artist_card'; 
+        li.dataset.artistName = artist.name;
+        li.innerHTML = `
+            <img src="${artist.image}" alt="${artist.name}">
+            <h5>${artist.name}</h5>
+        `;
+        container.appendChild(li);
+    });
+}
 
-    // 2. Telugu Songs
-    const teluguSongs = songs.filter(s => s.language === 'telugu');
-    populateSongSection(document.getElementById('telugu_songs_container'), teluguSongs);
+function populateAllContentSections({ telugu, hindi, english, tamil, kannada, artists }) {
+    populateSongSection(document.getElementById('telugu_songs_container'), telugu);
+    populateSongSection(document.getElementById('hindi_songs_container'), hindi);
+    populateSongSection(document.getElementById('english_songs_container'), english);
+    populateSongSection(document.getElementById('tamil_songs_container'), tamil);
+    populateSongSection(document.getElementById('kannada_songs_container'), kannada);
+    populateArtistsSection(document.getElementById('artists_container'), artists);
 
-    // 3. Hindi Songs
-    const hindiSongs = songs.filter(s => s.language === 'hindi');
-    populateSongSection(document.getElementById('hindi_songs_container'), hindiSongs);
+    const popularSongs = [...telugu.slice(0, 4), ...hindi.slice(0, 4), ...english.slice(0, 4), ...tamil.slice(0, 4)];
+    populateSongSection(document.getElementById('pop_song_container'), popularSongs);
 
-    // 4. English Songs
-    const englishSongs = songs.filter(s => s.language === 'english');
-    populateSongSection(document.getElementById('english_songs_container'), englishSongs);
-    
-    // Re-attach listeners for all the newly created play buttons
     attachAllEventListeners();
 }
 
-// ================================
-// SEARCH FUNCTIONALITY
-// ================================
-
-function setupSearch() {
-    const searchInput = document.querySelector('.search input');
-    const searchResultsContainer = document.querySelector('.search_results');
-
-    searchInput.addEventListener('input', () => {
-        const searchTerm = searchInput.value.trim().toLowerCase();
-
-        if (searchTerm.length === 0) {
-            searchResultsContainer.style.visibility = 'hidden';
-            searchResultsContainer.style.opacity = '0';
-            return;
-        }
-
-        const filteredSongs = songs.filter(song => {
-            // Clean the song name by removing HTML tags for accurate searching
-            const cleanSongName = song.songName.replace(/<[^>]*>?/gm, ' ').toLowerCase();
-            return cleanSongName.includes(searchTerm);
-        });
-
-        if (filteredSongs.length > 0) {
-            const resultsHTML = filteredSongs.map(song => {
-                const [title, subtitle] = song.songName.split('<br>');
-                return `
-                    <a href="#" class="card" data-id="${song.id}">
-                        <img src="${song.poster}" alt="">
-                        <div class="content">
-                            ${title}
-                            <div class="subtitle">${subtitle.replace(/<[^>]*>?/gm, '')}</div>
-                        </div>
-                    </a>
-                `;
-            }).join('');
-            searchResultsContainer.innerHTML = resultsHTML;
-        } else {
-            searchResultsContainer.innerHTML = `<p style="padding: 10px; color: #fff;">No results found</p>`;
-        }
-        
-        searchResultsContainer.style.visibility = 'visible';
-        searchResultsContainer.style.opacity = '1';
-    });
-
-    // Hide results when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search')) {
-            searchResultsContainer.style.visibility = 'hidden';
-            searchResultsContainer.style.opacity = '0';
-        }
-    });
-
-    // Handle clicking on a search result
-    searchResultsContainer.addEventListener('click', (e) => {
-        const card = e.target.closest('.card');
-        if (card) {
-            e.preventDefault(); // Prevent the # from being added to the URL
-            const songId = card.dataset.id;
-            playSong(songId);
-            // Clear input and hide results after selection
-            searchInput.value = '';
-            searchResultsContainer.style.visibility = 'hidden';
-            searchResultsContainer.style.opacity = '0';
-        }
-    });
-}
-
-
-// ================================
-// LIKE SONGS
-// ================================
-function toggleLike(songId) {
-    if (likedSongs.has(songId)) likedSongs.delete(songId);
-    else likedSongs.add(songId);
-
-    saveState();
-    updateLikeButtonsUI();
-    updateProfileStats();
-
-    // Refresh liked playlist if active
-    if (document.querySelector('[data-playlist="liked"].active')) {
-        renderPlaylist(songs.filter(song => likedSongs.has(song.id)));
-    }
-}
-function updateLikeButtonsUI() {
-    document.querySelectorAll('.like_icon').forEach(icon => {
-        if (likedSongs.has(icon.dataset.id)) {
-            icon.classList.add('liked', 'bi-heart-fill');
-            icon.classList.remove('bi-heart');
-        } else {
-            icon.classList.remove('liked', 'bi-heart-fill');
-            icon.classList.add('bi-heart');
-        }
-    });
-    const likeMaster = document.getElementById('like_master');
-    if (index && likedSongs.has(index)) {
-        likeMaster.classList.add('liked', 'bi-heart-fill');
-        likeMaster.classList.remove('bi-heart');
+function updateDynamicBackground(posterUrl) {
+    const bgElement = document.querySelector('.song_side::before');
+    if (posterUrl) {
+        songSide.style.setProperty('--bg-image', `url(${posterUrl})`);
+        bgElement.style.opacity = '1';
     } else {
-        likeMaster.classList.remove('liked', 'bi-heart-fill');
-        likeMaster.classList.add('bi-heart');
+        bgElement.style.opacity = '0';
     }
 }
+
+function updateNowPlayingIndicator() {
+    document.querySelectorAll('.songitem.playing').forEach(item => item.classList.remove('playing'));
+    if (index) {
+        document.querySelectorAll(`.songitem[data-id="${index}"]`).forEach(item => item.classList.add('playing'));
+    }
+}
+
 
 // ================================
 // PLAYER LOGIC
 // ================================
 function playSong(songId, autoPlay = true) {
     index = String(songId);
-    const songData = songs.find(s => s.id === index);
-    if (!songData) return;
+    const songData = allSongs.get(index);
+    if (!songData) {
+        console.error(`Song with ID ${index} not found!`);
+        return;
+    }
 
-    makeAllplays();
-    music.src = `audio/${index}.mp3`;
+    music.src = songData.audioUrl;
     poster_master_play.src = songData.poster;
     title.innerHTML = songData.songName;
-
-    if (autoPlay) music.play();
-
+    
+    updateDynamicBackground(songData.poster);
     updateLikeButtonsUI();
-    makeAllBackgrounds();
-    document.querySelectorAll('.songitem').forEach(item => {
-        const itemPlayButton = item.querySelector('.playlistplay');
-        if (itemPlayButton && itemPlayButton.id == index) {
-            item.style.background = "rgb(105,105,105,.1)";
-        }
-    });
+    updateNowPlayingIndicator();
+    makeAllplays();
+
+    if (autoPlay) {
+        music.play().catch(e => console.error("Audio playback failed:", e));
+    }
 
     saveState();
 }
+
+// ... The rest of the JS file remains the same ...
+// togglePlayPause, setupSearch, State Management, Likes, Audio Events, Controls, UI & Navigation, etc.
+// I will include the full, final code below for easy copy-pasting.
+
 function togglePlayPause() {
-    if (!index && currentPlaylist.length > 0) {
-        playSong(currentPlaylist[0].id);
+    if (!music.src) {
+        if (currentPlaylist.length > 0) playSong(currentPlaylist[0].id);
     } else {
-        if (music.paused || music.currentTime <= 0) music.play();
+        if (music.paused) music.play();
         else music.pause();
     }
 }
 
-// ================================
-// AUDIO EVENTS
-// ================================
+function setupSearch() {
+    const searchInput = document.querySelector('.search input');
+    const searchResultsContainer = document.querySelector('.search_results');
+    let searchTimeout;
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        if (searchTerm.length < 2) {
+            searchResultsContainer.style.visibility = 'hidden';
+            return;
+        }
+        searchTimeout = setTimeout(async () => {
+            const searchResults = await fetchSongsByQuery(searchTerm, 10);
+            searchResults.forEach(song => {
+                if (!allSongs.has(song.id)) allSongs.set(song.id, song);
+            });
+            if (searchResults.length > 0) {
+                searchResultsContainer.innerHTML = searchResults.map(song => `
+                    <a href="#" class="card" data-id="${song.id}">
+                        <img src="${song.poster}" alt="">
+                        <div class="content">
+                            ${song.songName.split('<br>')[0]}
+                            <div class="subtitle">${song.songName.split('<div class="subtitle">')[1].replace('</div>', '')}</div>
+                        </div>
+                    </a>`).join('');
+            } else {
+                searchResultsContainer.innerHTML = `<p style="padding: 10px; color: #fff;">No results found</p>`;
+            }
+            searchResultsContainer.style.visibility = 'visible';
+        }, 300);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search')) searchResultsContainer.style.visibility = 'hidden';
+    });
+
+    searchResultsContainer.addEventListener('click', (e) => {
+        const card = e.target.closest('.card');
+        if (card) {
+            e.preventDefault();
+            playSong(card.dataset.id);
+            searchInput.value = '';
+            searchResultsContainer.style.visibility = 'hidden';
+        }
+    });
+}
+
+function saveState() {
+    localStorage.setItem("playerState", JSON.stringify({
+        lastSongId: index, likedSongs: [...likedSongs], isShuffle, repeatMode, volume: music.volume
+    }));
+}
+
+function loadState() {
+    try {
+        const state = JSON.parse(localStorage.getItem("playerState"));
+        if (!state) return;
+        likedSongs = new Set(state.likedSongs || []);
+        isShuffle = !!state.isShuffle;
+        repeatMode = state.repeatMode || 0;
+        music.volume = state.volume ?? 1;
+        vol.value = music.volume * 100;
+    } catch (e) { console.warn("Failed to load state", e); }
+}
+
+async function restoreLastSong() {
+    const state = JSON.parse(localStorage.getItem("playerState"));
+    if (state && state.lastSongId) {
+        let lastSongData = allSongs.get(state.lastSongId);
+        if (!lastSongData) {
+            const songDetails = await fetchSongsByQuery(state.lastSongId, 1);
+            if (songDetails.length > 0) {
+                lastSongData = songDetails[0];
+                allSongs.set(lastSongData.id, lastSongData);
+            }
+        }
+        if (lastSongData) playSong(lastSongData.id, false);
+    }
+}
+
+function toggleLike(songId) {
+    if (likedSongs.has(songId)) likedSongs.delete(songId);
+    else likedSongs.add(songId);
+    saveState();
+    updateLikeButtonsUI();
+    updateProfileStats();
+    if (document.querySelector('[data-playlist="liked"].active')) {
+        const likedSongsList = [...allSongs.values()].filter(song => likedSongs.has(song.id));
+        renderPlaylist(likedSongsList);
+    }
+}
+
+function updateLikeButtonsUI() {
+    document.querySelectorAll('.like_icon').forEach(icon => {
+        icon.classList.toggle('liked', likedSongs.has(icon.dataset.id));
+        icon.classList.toggle('bi-heart-fill', likedSongs.has(icon.dataset.id));
+        icon.classList.toggle('bi-heart', !likedSongs.has(icon.dataset.id));
+    });
+    const likeMaster = document.getElementById('like_master');
+    if (index) {
+        likeMaster.classList.toggle('liked', likedSongs.has(index));
+        likeMaster.classList.toggle('bi-heart-fill', likedSongs.has(index));
+        likeMaster.classList.toggle('bi-heart', !likedSongs.has(index));
+    }
+}
+
 music.onplay = () => {
     wave.classList.add('active1');
     masterPlay.classList.replace('bi-play-fill', 'bi-pause-fill');
-    document.querySelectorAll(`#${index}.playlistplay`).forEach(btn => btn.classList.replace('bi-play-circle-fill', 'bi-pause-circle-fill'));
+    document.querySelectorAll(`.playlistplay#${index}`).forEach(btn => btn.classList.replace('bi-play-circle-fill', 'bi-pause-circle-fill'));
 };
 music.onpause = () => {
     wave.classList.remove('active1');
     masterPlay.classList.replace('bi-pause-fill', 'bi-play-fill');
-    document.querySelectorAll(`#${index}.playlistplay`).forEach(btn => btn.classList.replace('bi-pause-circle-fill', 'bi-play-circle-fill'));
+    document.querySelectorAll(`.playlistplay#${index}`).forEach(btn => btn.classList.replace('bi-pause-circle-fill', 'bi-play-circle-fill'));
 };
 music.addEventListener('timeupdate', () => {
     const { currentTime, duration } = music;
@@ -342,19 +420,16 @@ music.addEventListener('ended', () => {
     else next.click();
 });
 
-// ================================
-// CONTROLS
-// ================================
 next.addEventListener('click', () => {
     if (currentPlaylist.length === 0) return;
     if (isShuffle) {
-        let nextIndex;
-        do { nextIndex = Math.floor(Math.random() * currentPlaylist.length); } while (currentPlaylist[nextIndex].id == index && currentPlaylist.length > 1);
-        playSong(currentPlaylist[nextIndex].id);
+        let randomIndex;
+        do { randomIndex = Math.floor(Math.random() * currentPlaylist.length); } while (currentPlaylist[randomIndex].id == index && currentPlaylist.length > 1);
+        playSong(currentPlaylist[randomIndex].id);
         return;
     }
     const currentIndexInPlaylist = currentPlaylist.findIndex(song => song.id == index);
-    if (currentIndexInPlaylist === currentPlaylist.length - 1) {
+    if (currentIndexInPlaylist === -1 || currentIndexInPlaylist === currentPlaylist.length - 1) {
         if (repeatMode === 1) playSong(currentPlaylist[0].id);
     } else {
         playSong(currentPlaylist[currentIndexInPlaylist + 1].id);
@@ -384,30 +459,28 @@ vol.addEventListener('change', () => {
     saveState();
 });
 
-// ================================
-// UI & NAVIGATION
-// ================================
 function updateProfileStats() {
     document.getElementById('liked_songs_count').innerText = likedSongs.size;
 }
 
-// Function to setup a generic scroller
-function setupScroller(containerId, leftBtnId, rightBtnId) {
-    const container = document.getElementById(containerId);
-    const leftBtn = document.getElementById(leftBtnId);
-    const rightBtn = document.getElementById(rightBtnId);
-    if (!container || !leftBtn || !rightBtn) return;
-
-    leftBtn.addEventListener('click', () => container.scrollLeft -= 330);
-    rightBtn.addEventListener('click', () => container.scrollLeft += 330);
-}
-
-// Setup all scrollers on the page
 function setupScrollers() {
     setupScroller('pop_song_container', 'pop_song_left', 'pop_song_right');
     setupScroller('telugu_songs_container', 'telugu_song_left', 'telugu_song_right');
     setupScroller('hindi_songs_container', 'hindi_song_left', 'hindi_song_right');
     setupScroller('english_songs_container', 'english_song_left', 'english_song_right');
+    // Add new scrollers
+    setupScroller('tamil_songs_container', 'tamil_song_left', 'tamil_song_right');
+    setupScroller('kannada_songs_container', 'kannada_song_left', 'kannada_song_right');
+    setupScroller('artists_container', 'pop_artist_left', 'pop_artist_right');
+}
+
+function setupScroller(containerId, leftBtnId, rightBtnId) {
+    const container = document.getElementById(containerId);
+    const leftBtn = document.getElementById(leftBtnId);
+    const rightBtn = document.getElementById(rightBtnId);
+    if (!container || !leftBtn || !rightBtn) return;
+    leftBtn.addEventListener('click', () => container.scrollLeft -= 330);
+    rightBtn.addEventListener('click', () => container.scrollLeft += 330);
 }
 
 const userProfileButton = document.getElementById('user_profile_button');
@@ -415,15 +488,21 @@ const profileModal = document.getElementById('profile_modal');
 const closeModal = document.getElementById('close_modal');
 userProfileButton.addEventListener('click', () => profileModal.classList.add('active'));
 closeModal.addEventListener('click', () => profileModal.classList.remove('active'));
+
 document.querySelectorAll('.playlist h4').forEach(menuItem => {
     menuItem.addEventListener('click', (e) => {
         document.querySelector('.playlist h4.active').classList.remove('active');
         e.currentTarget.classList.add('active');
         const playlistType = e.currentTarget.dataset.playlist;
-        if (playlistType === 'liked') renderPlaylist(songs.filter(song => likedSongs.has(song.id)));
-        else renderPlaylist(songs);
+        if (playlistType === 'liked') {
+            const likedSongsList = [...allSongs.values()].filter(song => likedSongs.has(song.id));
+            renderPlaylist(likedSongsList, "Liked Songs");
+        } else {
+            renderPlaylist([...allSongs.values()]); // Pass null to reset title
+        }
     });
 });
+
 const menu_list_icon = document.getElementById('menu_list');
 const menu_side = document.querySelector('.menu_side');
 const menu_overlay = document.getElementById('menu_overlay');
@@ -437,29 +516,42 @@ menu_list_icon.addEventListener('click', () => {
 });
 menu_overlay.addEventListener('click', closeMenu);
 
-// ================================
-// EVENT ATTACH
-// ================================
 function attachAllEventListeners() {
     masterPlay.onclick = togglePlayPause;
-    document.querySelectorAll('.playlistplay').forEach(btn => {
-        btn.onclick = (el) => {
-            const clickedIndex = el.target.id;
-            if (index != clickedIndex) playSong(clickedIndex);
+    document.body.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('playlistplay')) {
+            const clickedId = e.target.id;
+            if (index !== clickedId) playSong(clickedId);
             else togglePlayPause();
-        };
+        }
+        if (e.target.classList.contains('like_icon')) {
+            toggleLike(e.target.dataset.id);
+        }
+        // --- NEW: Handle artist card clicks ---
+        const artistCard = e.target.closest('.artist_card');
+        if (artistCard) {
+            const artistName = artistCard.dataset.artistName;
+            document.querySelector('.playlist h4.active')?.classList.remove('active');
+            renderPlaylist([], `Loading ${artistName}...`); // Show loading state
+            const artistSongs = await fetchSongsByQuery(artistName);
+            artistSongs.forEach(song => {
+                if(!allSongs.has(song.id)) allSongs.set(song.id, song)
+            });
+            renderPlaylist(artistSongs, `${artistName}'s Top Songs`);
+            // Optionally play the first song
+            if (artistSongs.length > 0) playSong(artistSongs[0].id);
+        }
     });
-    document.querySelectorAll('.like_icon').forEach(icon => {
-        icon.onclick = (el) => toggleLike(el.target.dataset.id);
-    });
+
     document.getElementById('like_master').onclick = () => {
         if (index) toggleLike(index);
     };
-    document.querySelectorAll('.songitem').forEach(item => item.addEventListener('click', closeMenu));
+
+    document.querySelectorAll('.songitem').forEach(item => item.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('playlistplay') && !e.target.classList.contains('like_icon')) {
+            if (window.innerWidth <= 930) closeMenu();
+        }
+    }));
 }
 
-// ================================
-// HELPERS
-// ================================
 const makeAllplays = () => document.querySelectorAll('.playlistplay').forEach(el => el.classList.replace('bi-pause-circle-fill', 'bi-play-circle-fill'));
-const makeAllBackgrounds = () => document.querySelectorAll('.songitem').forEach(el => el.style.background = 'rgba(105, 105, 105, 0)');

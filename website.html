@@ -5,7 +5,7 @@
     <meta http-equiv="x-UA-compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Make sure this points to the CSS file below -->
+    <!-- Make sure this points to your CSS file -->
     <link rel="stylesheet" href="style.css"> 
     <title>Feel_the_music</title>
 </head>
@@ -18,7 +18,9 @@
                 <h4 data-playlist="liked"><span></span><i class="bi bi-heart-fill"></i> Liked Songs</h4>
             </div>
             <div class="menu_song">
-                <ul class="song-list-container"></ul>
+                <ul class="song-list-container">
+                    <!-- Songs will be dynamically loaded here -->
+                </ul>
             </div>
         </div>
 
@@ -40,8 +42,8 @@
                 </div>
             </nav>
             <div class="content">
-                <h1>Alen Walker-Fade</h1>
-                <p>You were the shadow to my light did you feel us Another start you fade <br>Away afraid our of sight Wanna see us Alive </p>
+                <h1>Feel The Music</h1>
+                <p>Your personal music hub, powered by dynamic playlists. <br>Click any song to begin.</p>
                 <div class="buttons">
                     <button>PLAY</button>
                     <button>FOLLOW</button>
@@ -56,13 +58,8 @@
                         <i class="bi bi-arrow-right-short" id="pop_song_right"></i>
                     </div>
                 </div>
-                <!-- Added ID here for easier JS access -->
                 <div class="pop_song" id="pop_song_container"></div>
             </div>
-
-            <!-- ============================================= -->
-            <!--   NEW LANGUAGE-BASED SONG SECTIONS START HERE   -->
-            <!-- ============================================= -->
 
             <!-- Telugu Songs Section -->
             <div class="language_songs">
@@ -88,7 +85,7 @@
                 <div class="pop_song" id="hindi_songs_container"></div>
             </div>
 
-            <!-- English Songs Section -->
+            <!-- English Songs Section
             <div class="language_songs">
                 <div class="h4">
                     <h4>English Songs</h4>
@@ -98,15 +95,48 @@
                     </div>
                 </div>
                 <div class="pop_song" id="english_songs_container"></div>
+            </div> -->
+
+            <!-- Tamil Songs Section -->
+            <div class="language_songs">
+                <div class="h4">
+                    <h4>Tamil Songs</h4>
+                    <div class="btn_s">
+                        <i class="bi bi-arrow-left-short" id="tamil_song_left"></i>
+                        <i class="bi bi-arrow-right-short" id="tamil_song_right"></i>
+                    </div>
+                </div>
+                <div class="pop_song" id="tamil_songs_container"></div>
             </div>
-            
-            <!-- ============================================= -->
-            <!--       NEW LANGUAGE-BASED SECTIONS END HERE      -->
-            <!-- ============================================= -->
+
+            <!-- Kannada Songs Section -->
+            <div class="language_songs">
+                <div class="h4">
+                    <h4>Kannada Songs</h4>
+                    <div class="btn_s">
+                        <i class="bi bi-arrow-left-short" id="kannada_song_left"></i>
+                        <i class="bi bi-arrow-right-short" id="kannada_song_right"></i>
+                    </div>
+                </div>
+                <div class="pop_song" id="kannada_songs_container"></div>
+            </div>
+
+            <!-- Popular Artists Section -->
+            <div class="popular_artists">
+                <div class="h4">
+                    <h4>Popular Artists</h4>
+                    <div class="btn_s">
+                        <i class="bi bi-arrow-left-short" id="pop_artist_left"></i>
+                        <i class="bi bi-arrow-right-short" id="pop_artist_right"></i>
+                    </div>
+                </div>
+                <div class="pop_artist" id="artists_container">
+                    <!-- Artist cards will be generated here by JS -->
+                </div>
+            </div>
 
         </div>
 
-        <!-- Player Structure (Unchanged) -->
         <div class="master_play">
             <div class="wave" id="wave">
                 <div class="wave1"></div>
@@ -115,10 +145,10 @@
             </div>
             
             <div class="player-info">
-                <img src="img/20.jpg" alt="" id="poster_master_play">
+                <img src="img/default_poster.png" alt="" id="poster_master_play">
                 <h5 id="title">
-                    Vande Mataram
-                    <div class="subtitle">Bankim Chandra</div>
+                    Select a Song
+                    <div class="subtitle">to start listening</div>
                 </h5>
                 <i class="bi bi-heart" id="like_master"></i>
             </div>
@@ -144,7 +174,7 @@
             </div>
 
             <div class="player-side-controls">
-                <a href="" download id="download_music"><i class="bi bi-cloud-arrow-down-fill"></i></a>
+                <a href="" download id="download_music" style="display: none;"><i class="bi bi-cloud-arrow-down-fill"></i></a>
                 <div class="vol">
                     <i class="bi bi-volume-up-fill" id="vol_icon"></i>
                     <input type="range" min="0" max="100" id="vol" value="100">
@@ -162,8 +192,8 @@
             <i class="bi bi-x" id="close_modal"></i>
             <h2>Profile</h2>
             <div class="profile-info">
-                <img src="img/KDS CODER.png" alt="User">
-                <h3>KDS Coder</h3>
+                <img src="img/logo.png" alt="User">
+                <h3>pavan_programming</h3>
                 <p>Your personal music hub</p>
             </div>
             <div class="profile-stats">
