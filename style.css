@@ -686,3 +686,90 @@ body {
     color: #a4a8b4;
     font-size: 13px;
 }
+/* ============================================== */
+/*          NEW ARTIST PAGE STYLES                */
+/* ============================================== */
+
+#artist_view {
+    padding: 20px 5%; /* Corresponds to 90% width */
+}
+
+#artist_view_header {
+    display: flex;
+    align-items: flex-end;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+#artist_art {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%; /* Artists are circles */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+#artist_details h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #fff;
+}
+
+#artist_details .play_artist_btn {
+    width: 130px;
+    height: 35px;
+    border: none;
+    outline: none;
+    border-radius: 20px;
+    background: #36e2ec;
+    color: #111727;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .3s linear;
+    margin-top: 15px;
+}
+
+#artist_details .play_artist_btn:hover {
+    transform: scale(1.05);
+}
+
+/* Reusing album song item styles for the artist song list for consistency */
+#artist_song_list .songitem {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background .2s linear;
+    cursor: pointer;
+    list-style-type: none;
+}
+
+#artist_song_list .songitem:hover {
+    background: rgba(184, 184, 184, .1);
+}
+
+#artist_song_list .songitem.playing {
+    background: rgba(184, 184, 184, .2);
+}
+
+#artist_song_list .track_number {
+    width: 30px;
+    color: #a4a8b4;
+    margin-right: 15px;
+    font-size: 14px;
+    text-align: right;
+}
+
+#artist_song_list .song_details {
+    color: #fff;
+    flex-grow: 1;
+}
+
+#artist_song_list .song_details .subtitle {
+    color: #a4a8b4;
+    font-size: 12px;
+}
+
+#artist_song_list .song_duration {
+    color: #a4a8b4;
+    font-size: 13px;
+}
